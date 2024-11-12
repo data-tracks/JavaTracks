@@ -1,0 +1,35 @@
+plugins {
+    id 'java'
+}
+
+sourceCompatibility = 1.11
+targetCompatibility = 1.11
+
+group = 'org.polypheny'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // MIT
+    compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.34'
+    // Apache 2.0
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.18.1'
+    // Apache 2.0
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.18.1'
+
+
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    archiveBaseName = 'data-tracks-client'
+    archiveVersion = '1.0.0'
+}
