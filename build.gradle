@@ -1,12 +1,16 @@
 plugins {
     id 'java'
+    // MIT
     id "io.freefair.lombok" version "8.10.2"
 }
 
-sourceCompatibility = 1.11
-targetCompatibility = 1.11
+java {
+    sourceCompatibility = 1.11
+    targetCompatibility = 1.11
+}
 
-group = 'org.polypheny'
+
+group = 'dev.datatracks'
 version = '1.0-SNAPSHOT'
 
 repositories {
@@ -14,18 +18,38 @@ repositories {
 }
 
 dependencies {
-      // Apache 2.0
+    // Apache 2.0
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.18.1'
     // Apache 2.0
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.18.1'
+    // Apache 2.0
+    implementation group: 'com.google.flatbuffers', name: 'flatbuffers-java', version: '24.3.25'
 
-
+    // Testing
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }
 
 tasks.withType(JavaCompile).configureEach {
     options.annotationProcessorPath = configurations.annotationProcessor
+}
+
+tasks.register('generateFlatBuffers', Exec) {
+    description = 'Generates Java classes from FlatBuffers schema files in protocol submodule'
+    inputs.dir("protocol")  // protocol files
+    outputs.dir("$layout.buildDirectory/generated/flatbuffers")
+
+    commandLine 'flatc', '--java', '-o', "$layout.buildDirectory/generated/flatbuffers", 'protocol/datatracks_protocol.fbs'
+}
+
+compileJava.dependsOn generateFlatBuffers
+
+sourceSets {
+    main {
+        java {
+            srcDir "$buildDir/generated/flatbuffers"  // Adds generated FlatBuffers classes to Java source
+        }
+    }
 }
 
 test {
