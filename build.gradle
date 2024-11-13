@@ -34,15 +34,12 @@ tasks.withType(JavaCompile).configureEach {
     options.annotationProcessorPath = configurations.annotationProcessor
 }
 
-tasks.register('generateFlatBuffers', Exec) {
-    description = 'Generates Java classes from FlatBuffers schema files in protocol submodule'
-    inputs.dir("protocol")  // protocol files
-    outputs.dir("$layout.buildDirectory/generated/flatbuffers")
-
-    commandLine 'flatc', '--java', '-o', "$layout.buildDirectory/generated/flatbuffers", 'protocol/datatracks_protocol.fbs'
+tasks.register('copyProtocol', Copy) {
+    from "protocol/generated/java/protocol"
+    into layout.buildDirectory.dir("generated/flatbuffers").get().asFile
 }
 
-compileJava.dependsOn generateFlatBuffers
+compileJava.dependsOn copyProtocol
 
 sourceSets {
     main {
