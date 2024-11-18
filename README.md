@@ -1,4 +1,4 @@
-#🚂 Java Client for DataTracks
+# 🚂 Java Client for DataTracks
 
 The Java client for DataTracks allows clients to connect to a DataTracks server and perform network-based operations such as sending and receiving data. Built using Java's NIO (New I/O) API, the client can communicate with the server using efficient, non-blocking TCP or UDP connections, depending on the selected configuration.
 
