@@ -1,3 +1,4 @@
 [submodule "protocol"]
 	path = protocol
-	url = git@github.com:data-tracks/DataTracks-Protocol.git
+	url = git@github.com:data-tracks/TrackRails.git
+	branch = generated

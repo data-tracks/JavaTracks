@@ -1,35 +1,32 @@
 package dev.datatracks;
 
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.function.Consumer;
+
 import lombok.NonNull;
 
 public interface Connection {
 
     @NonNull
-    static Connection initConnection( @NonNull ConnectType type, Network network ) {
-        switch ( type ) {
-            case UDP:
-                try {
-                    return new UdpConnection(network);
-                } catch ( SocketException | UnknownHostException e ) {
-                    throw new RuntimeException( e );
-                }
-            case TCP:
-                return new TcpConnection(network);
-        }
-        throw new IllegalArgumentException( "Unknown connection type: " + type );
+    static Connection initConnection(String url, int port) {
+        return new SyncConnection(new Network(url, port));
     }
 
     boolean connect();
+
     boolean disconnect();
+
     boolean isConnected();
+
     boolean isClosed();
 
-    boolean send( Value value );
+    boolean send(Value value);
 
+    void receive(Consumer<Value> consumer);
 
-    enum ConnectType{
+    enum ConnectType {
         UDP,
         TCP
     }

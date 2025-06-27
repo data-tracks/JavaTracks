@@ -9,5 +9,11 @@ public class Network {
     int port;
     InetSocketAddress inetAddress;
 
+
+    public Network(String host, int port) {
+        this.host = host;
+        this.port = port;
+        this.inetAddress = new InetSocketAddress(host, port);
+    }
 }
 
