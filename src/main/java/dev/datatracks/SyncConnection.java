@@ -27,27 +27,42 @@ public class SyncConnection implements Connection {
 
     @Override
     public boolean connect() {
-        try ( SocketChannel channel = SocketChannel.open( this.address ) ) {
+        try ( SocketChannel channel = SocketChannel.open() ) {
             this.channel = channel;
-            channel.connect( this.address );
+            channel.connect(this.address);
 
-            FlatBufferBuilder builder = new FlatBufferBuilder( 0 );
-            protocol.RegisterRequest.startRegisterRequest(builder);
-            var register = protocol.RegisterRequest.endRegisterRequest(builder);
+            var data = getRegister();
 
-            protocol.OkStatus.startOkStatus(builder);
-            var status = protocol.OkStatus.endOkStatus(builder);
-
-            var msg = protocol.Message.createMessage(builder, Payload.RegisterRequest, register, Status.OkStatus, status);
-
-            builder.finish(msg);
-            var data = builder.sizedByteArray();
-
+            var len = ByteBuffer.allocate(4).putInt(data.length).array();
+            channel.write(ByteBuffer.wrap(len));
             channel.write(ByteBuffer.wrap(data));
+            ByteBuffer buffer = ByteBuffer.allocate(4);
+            channel.read(buffer);
+            var length = buffer.getInt();
+
+            ByteBuffer byteBuffer = ByteBuffer.allocate(length);
+            channel.read(byteBuffer);
+            protocol.RegisterResponse response = mapper.readValue(byteBuffer.array(), protocol.RegisterResponse.class);
+            System.out.println( response.toString() );
+
             return true;
         } catch ( IOException e ) {
             return false;
         }
+    }
+
+    private static byte[] getRegister() {
+        FlatBufferBuilder builder = new FlatBufferBuilder( 0 );
+        protocol.RegisterRequest.startRegisterRequest(builder);
+        var register = protocol.RegisterRequest.endRegisterRequest(builder);
+
+        protocol.OkStatus.startOkStatus(builder);
+        var status = protocol.OkStatus.endOkStatus(builder);
+
+        var msg = protocol.Message.createMessage(builder, Payload.RegisterRequest, register, Status.OkStatus, status);
+
+        builder.finish(msg);
+        return builder.sizedByteArray();
     }
 
 

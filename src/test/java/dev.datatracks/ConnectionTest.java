@@ -6,7 +6,7 @@ public class ConnectionTest {
 
     @Test
     public void testConnection() {
-        Connection connection = Connection.initConnection("localhost", 5959) ;
-        connection.connect();
+        Connection connection = Connection.initConnection("::1", 5959) ;
+        assert connection.connect();
     }
 }
