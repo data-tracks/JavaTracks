@@ -1,11 +1,11 @@
 package dev.datatracks;
 
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.io.IOException;
 import java.util.function.Consumer;
 
+import dev.datatracks.value.Value;
 import lombok.NonNull;
+import protocol.Message;
 
 public interface Connection {
 
@@ -22,9 +22,9 @@ public interface Connection {
 
     boolean isClosed();
 
-    boolean send(Value value);
+    boolean send(Value value) throws IOException;
 
-    void receive(Consumer<Value> consumer);
+    Thread receive(Consumer<Message> consumer);
 
     enum ConnectType {
         UDP,

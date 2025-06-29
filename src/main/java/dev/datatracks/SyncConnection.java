@@ -2,6 +2,8 @@ package dev.datatracks;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.flatbuffers.FlatBufferBuilder;
+import dev.datatracks.value.Value;
+import protocol.Message;
 import protocol.Payload;
 import protocol.Status;
 
@@ -27,28 +29,32 @@ public class SyncConnection implements Connection {
 
     @Override
     public boolean connect() {
-        try ( SocketChannel channel = SocketChannel.open() ) {
-            this.channel = channel;
-            channel.connect(this.address);
+        try {
+            this.channel = SocketChannel.open() ;
+            this.channel.connect(this.address);
 
             var data = getRegister();
 
             var len = ByteBuffer.allocate(4).putInt(data.length).array();
-            channel.write(ByteBuffer.wrap(len));
-            channel.write(ByteBuffer.wrap(data));
-            ByteBuffer buffer = ByteBuffer.allocate(4);
-            channel.read(buffer);
-            var length = buffer.getInt();
+            this.channel.write(ByteBuffer.wrap(len));
+            this.channel.write(ByteBuffer.wrap(data));
+            protocol.Message response = readMessage();
 
-            ByteBuffer byteBuffer = ByteBuffer.allocate(length);
-            channel.read(byteBuffer);
-            protocol.RegisterResponse response = mapper.readValue(byteBuffer.array(), protocol.RegisterResponse.class);
-            System.out.println( response.toString() );
 
             return true;
         } catch ( IOException e ) {
             return false;
         }
+    }
+
+    private protocol.Message readMessage() throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate(4);
+        this.channel.read(buffer);
+        var length = buffer.flip().getInt();
+
+        ByteBuffer byteBuffer = ByteBuffer.allocate(length);
+        this.channel.read(byteBuffer);
+        return Message.getRootAsMessage(byteBuffer.flip());
     }
 
     private static byte[] getRegister() {
@@ -91,13 +97,44 @@ public class SyncConnection implements Connection {
 
 
     @Override
-    public boolean send( Value value ) {
-        return false;
+    public boolean send( Value value ) throws IOException {
+        if ( channel == null ) {
+            this.connect();
+        }
+
+        var builder = new FlatBufferBuilder();
+
+        var topic = builder.createSharedString("");
+        var evenTime = protocol.Time.createTime(builder, System.currentTimeMillis()); // todo maybe change
+        var train = protocol.Train.createTrain(builder, value.asFlat(builder), topic, evenTime );
+        protocol.OkStatus.startOkStatus(builder);
+        var status = protocol.OkStatus.endOkStatus(builder);
+        var msg = protocol.Message.createMessage(builder, Payload.Train, train, Status.OkStatus, status );
+
+        builder.finish(msg);
+        writeAll(builder.sizedByteArray());
+        return true;
+    }
+
+    private void writeAll(byte[] data) throws IOException {
+        var len = ByteBuffer.allocate(4).putInt(data.length).array();
+        channel.write(ByteBuffer.wrap(len));
+        channel.write(ByteBuffer.wrap(data));
     }
 
     @Override
-    public void receive(Consumer<Value> consumer) {
-
+    public Thread receive(Consumer<Message> consumer) {
+        var th = new Thread(() -> {
+            try {
+                while (true) {
+                    consumer.accept(readMessage());
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        th.start();
+        return th;
     }
 
 }
