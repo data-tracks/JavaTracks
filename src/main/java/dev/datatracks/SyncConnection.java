@@ -1,6 +1,5 @@
 package dev.datatracks;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.flatbuffers.FlatBufferBuilder;
 import dev.datatracks.msg.TrainMessage;
 import dev.datatracks.value.Value;
@@ -14,17 +13,16 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.*;
+import java.util.function.Consumer;
 
 public class SyncConnection implements Connection {
-    private final ObjectMapper mapper = new ObjectMapper();
 
     private final InetSocketAddress address;
-    private final Network network;
     private SocketChannel channel;
-
+    ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public SyncConnection(Network network ) {
-        this.network = network;
         this.address = new InetSocketAddress( network.getHost(), network.getPort() );
     }
 
@@ -86,17 +84,6 @@ public class SyncConnection implements Connection {
     }
 
 
-    @Override
-    public boolean isConnected() {
-        return this.channel != null && this.channel.isConnected();
-    }
-
-
-    @Override
-    public boolean isClosed() {
-        return this.channel == null;
-    }
-
 
     @Override
     public boolean send( Value value ) throws IOException {
@@ -126,7 +113,19 @@ public class SyncConnection implements Connection {
 
     @Override
     public dev.datatracks.msg.Message receive(Duration timeout) throws IOException {
-        return dev.datatracks.msg.Message.from(readMessage());
+        var future = CompletableFuture.supplyAsync(() -> {
+            try {
+                return dev.datatracks.msg.Message.from(readMessage());
+            } catch (IOException e) {
+                return null;
+            }
+        } );
+        future.orTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS);
+        try {
+            return future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            return null;
+        }
     }
 
     @Override
@@ -138,4 +137,30 @@ public class SyncConnection implements Connection {
         throw new IOException("Received unknown message from server");
     }
 
+    @Override
+    public Future<Void> receiveAsync(Consumer<dev.datatracks.msg.Message> consumer) {
+        return executor.submit(() -> {
+            try {
+                while (true) {
+                    consumer.accept(dev.datatracks.msg.Message.from(readMessage()));
+                }
+            } catch (IOException e) {
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public Future<Void> receiveAsyncValues(Consumer<Value> consumer) {
+       return receiveAsync(msg -> {
+           if (msg instanceof TrainMessage train) {
+               train.train.values.forEach(consumer);
+           }
+       });
+    }
+
+    @Override
+    public void close() throws Exception {
+        this.disconnect();
+    }
 }

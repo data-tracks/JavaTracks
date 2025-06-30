@@ -1,18 +1,12 @@
 package dev.datatracks;
 
-import com.google.flatbuffers.Table;
-import dev.datatracks.value.TextValue;
+import dev.datatracks.msg.Message;
 import dev.datatracks.value.Value;
 import org.junit.jupiter.api.Test;
-import protocol.Bool;
-import protocol.Payload;
-import protocol.Text;
-import protocol.Train;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.List;
 
 public class ConnectionTest {
 
@@ -36,7 +30,7 @@ public class ConnectionTest {
         Connection connection = Connection.initConnection("localhost", 8686) ;
         assert connection.connect();
 
-        connection.receive(Duration.ofMillis(10));
+        connection.receive(Duration.ofMillis(1_000));
     }
 
     @Test
@@ -44,7 +38,35 @@ public class ConnectionTest {
         Connection connection = Connection.initConnection("localhost", 8686) ;
         assert connection.connect();
 
-        connection.receiveValues(Duration.ofMillis(10));
+        connection.receiveValues(Duration.ofMillis(2_000));
     }
 
+    @Test
+    public void testReceiveAsync() throws IOException, InterruptedException {
+        Connection connection = Connection.initConnection("localhost", 8686) ;
+        assert connection.connect();
+
+        var trains = new ArrayList<Message>();
+        var future = connection.receiveAsync(trains::add);
+        Thread.sleep(2_000);
+        future.cancel(true);
+        assert !trains.isEmpty();
+
+        connection.disconnect();
+    }
+
+    @Test
+    public void testReceiveValuesAsync() throws IOException, InterruptedException {
+        try (Connection connection = Connection.initConnection("localhost", 8686) ) {
+            assert connection.connect();
+
+            var values = new ArrayList<Value>();
+            var future = connection.receiveAsyncValues(values::add);
+            Thread.sleep(2_000);
+            future.cancel(true);
+            assert !values.isEmpty();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
