@@ -1,0 +1,84 @@
+name: DataTracks JavaTracks Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'The Git tag for the release (e.g., v1.0.0, v1.2.3-beta)'
+        required: true
+        type: string
+      release_name:
+        description: 'The name of the release (defaults to tag_name)'
+        required: false
+        type: string
+        default: '' # Will be handled in the step if not provided
+      release_body:
+        description: 'Custom release notes content'
+        required: false
+        type: string
+        default: |
+          ## Release Notes
+
+          This release was manually triggered.
+          Please provide detailed notes for future releases!
+
+      draft:
+        description: 'Create a draft release (true/false)'
+        required: false
+        type: boolean
+        default: false
+      prerelease:
+        description: 'Mark as a pre-release (true/false)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write # Required to create/update releases and upload release assets
+
+jobs:
+  create_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Important: Fetch all history to generate changelog if needed
+
+      # Optional: Build your library artifacts here if you want to attach them to the release
+      # For example, if you have a Gradle project:
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build artifacts
+        run: ./gradlew clean build # This will create your JARs in build/libs/
+
+      # --- This is the core step for creating the GitHub Release ---
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          # Use the tag name provided via workflow_dispatch input
+          tag_name: ${{ github.event.inputs.tag_name }}
+          # Use the release name input, or fallback to tag_name if not provided
+          name: ${{ github.event.inputs.release_name || format('Release {0}', github.event.inputs.tag_name) }}
+          # Use the release body input
+          body: ${{ github.event.inputs.release_body }}
+          # Use the draft input
+          draft: ${{ github.event.inputs.draft }}
+          # Use the prerelease input
+          prerelease: ${{ github.event.inputs.prerelease }}
+
+          # Optional: Upload your built artifacts as release assets
+          files: |
+            build/libs/*.jar # Adjust this path to where your build tool outputs artifacts
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

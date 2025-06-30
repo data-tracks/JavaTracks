@@ -2,6 +2,9 @@ plugins {
     id 'java'
     // MIT
     id "io.freefair.lombok" version "8.10.2"
+    id 'java-library'
+    id 'maven-publish'
+    id 'signing'
 }
 
 java {
@@ -62,4 +65,59 @@ jar {
     archiveBaseName = 'JavaTracks'
     archiveVersion = '0.0.1'
     archiveFileName = 'javatracks.jar'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            groupId = project.group
+            artifactId = project.name
+            version = project.version
+
+            pom {
+                name = 'Your Library Name'
+                description = 'A short description of your library.'
+                url = 'https://github.com/your-org/your-repo' // Your project URL
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'yourusername'
+                        name = 'Your Name'
+                        email = 'your@email.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/your-org/your-repo.git'
+                    developerConnection = 'scm:git:ssh://github.com:your-org/your-repo.git'
+                    url = 'https://github.com/your-org/your-repo'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            def releasesRepoUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+            def snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            credentials {
+                username = project.hasProperty('ossrhUsername') ? project.ossrhUsername : System.getenv('OSSRH_USERNAME')
+                password = project.hasProperty('ossrhPassword') ? project.ossrhPassword : System.getenv('OSSRH_PASSWORD')
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.mavenJava
+    // Ensure you have GPG_TTY set if running in CI/CD without direct tty
+    // Or use system environment variables for private key and passphrase
+    useInMemoryPgpKeys(rootProject.ext.get('signing.keyId'), rootProject.ext.get('signing.password'), rootProject.ext.get('signing.secretKeyRingFile'))
+    // OR simpler for local/CI (requires GPG agent/GPG_TTY setup for passphrase)
+    // useGpgCmd()
 }
