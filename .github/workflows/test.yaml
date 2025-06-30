@@ -42,7 +42,7 @@ jobs:
         run: |
           echo "Waiting for service at $TARGET_URL..."
           for i in $(seq 1 $MAX_RETRIES); do
-            if curl --fail h $TARGET_URL; then
+            if curl --fail $TARGET_URL; then
               echo "Service is ready!"
               exit 0 # Success
             fi
