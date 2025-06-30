@@ -38,7 +38,7 @@ jobs:
         uses: Hardsix/action-wait-for-api@v2.0.2
         with:
           url: "http://localhost:2666/status"
-          expected-response-field: "connected"
+          expected-response-field: "status"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
