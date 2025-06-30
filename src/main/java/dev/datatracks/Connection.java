@@ -1,11 +1,12 @@
 package dev.datatracks;
 
 import java.io.IOException;
-import java.util.function.Consumer;
+import java.time.Duration;
+import java.util.List;
 
+import dev.datatracks.msg.Message;
 import dev.datatracks.value.Value;
 import lombok.NonNull;
-import protocol.Message;
 
 public interface Connection {
 
@@ -24,7 +25,9 @@ public interface Connection {
 
     boolean send(Value value) throws IOException;
 
-    Thread receive(Consumer<Message> consumer);
+    Message receive(Duration timeout) throws IOException;
+
+    List<Value> receiveValues(Duration timeout) throws IOException;
 
     enum ConnectType {
         UDP,

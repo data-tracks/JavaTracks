@@ -2,6 +2,7 @@ package dev.datatracks;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.flatbuffers.FlatBufferBuilder;
+import dev.datatracks.msg.TrainMessage;
 import dev.datatracks.value.Value;
 import protocol.Message;
 import protocol.Payload;
@@ -11,7 +12,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.function.Consumer;
+import java.time.Duration;
+import java.util.List;
 
 public class SyncConnection implements Connection {
     private final ObjectMapper mapper = new ObjectMapper();
@@ -123,18 +125,17 @@ public class SyncConnection implements Connection {
     }
 
     @Override
-    public Thread receive(Consumer<Message> consumer) {
-        var th = new Thread(() -> {
-            try {
-                while (true) {
-                    consumer.accept(readMessage());
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        th.start();
-        return th;
+    public dev.datatracks.msg.Message receive(Duration timeout) throws IOException {
+        return dev.datatracks.msg.Message.from(readMessage());
+    }
+
+    @Override
+    public List<Value> receiveValues(Duration timeout) throws IOException {
+        var msg = receive(timeout);
+        if (msg instanceof TrainMessage train) {
+            return train.train.values;
+        }
+        throw new IOException("Received unknown message from server");
     }
 
 }

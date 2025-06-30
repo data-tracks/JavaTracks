@@ -5,9 +5,11 @@ import com.google.flatbuffers.FlatBufferBuilder;
 public class TextValue implements Value {
     public final String value;
 
-    public TextValue(String value) {
+    TextValue(String value) {
         this.value = value;
     }
+
+
 
     @Override
     public int asFlat(FlatBufferBuilder builder) {

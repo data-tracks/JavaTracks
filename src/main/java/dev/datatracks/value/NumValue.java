@@ -2,10 +2,10 @@ package dev.datatracks.value;
 
 import com.google.flatbuffers.FlatBufferBuilder;
 
-public class IntValue implements Value {
-    public int value;
+public class NumValue implements Value {
+    public long value;
 
-    public IntValue(int value) {
+    public NumValue(long value) {
         this.value = value;
     }
 

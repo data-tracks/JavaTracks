@@ -4,11 +4,15 @@ import com.google.flatbuffers.Table;
 import dev.datatracks.value.TextValue;
 import dev.datatracks.value.Value;
 import org.junit.jupiter.api.Test;
+import protocol.Bool;
 import protocol.Payload;
 import protocol.Text;
 import protocol.Train;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ConnectionTest {
 
@@ -28,25 +32,19 @@ public class ConnectionTest {
 
 
     @Test
-    public void testReceive() throws InterruptedException {
+    public void testReceiveMsg() throws IOException {
         Connection connection = Connection.initConnection("localhost", 8686) ;
         assert connection.connect();
 
-        var th = connection.receive((msg -> {
-            if (msg.dataType() == Payload.Train) {
-                var train = (Train)msg.data(new Train());
-                for (int i = 0; i < train.valuesLength(); i++) {
-                    var valueWrapper = train.values(i);
-
-                    var dataType = valueWrapper.dataType();
-                    if (dataType == protocol.Value.Text) {
-                        var text = (Text)valueWrapper.data(new Text());
-                        System.out.println(text.data());
-                    }
-                }
-            }
-        }));
-        Thread.sleep(100000_000);
-        th.interrupt();
+        connection.receive(Duration.ofMillis(10));
     }
+
+    @Test
+    public void testReceiveValues() throws IOException {
+        Connection connection = Connection.initConnection("localhost", 8686) ;
+        assert connection.connect();
+
+        connection.receiveValues(Duration.ofMillis(10));
+    }
+
 }
