@@ -38,14 +38,19 @@ jobs:
         env:
           TARGET_URL: http://localhost:2666/status # <-- IMPORTANT: Change this to your actual URL
           MAX_RETRIES: 60                   # Max number of attempts
-          RETRY_INTERVAL_SECONDS: 5         # Time to wait between attempts
-          EXPECTED_HTTP_CODE_PREFIX: 2      # Expecting 2xx status codes (200, 201, etc.)
+          RETRY_INTERVAL_SECONDS: 10         # Time to wait between attempts
         run: |
+          echo "Waiting for service at ${TARGET_URL}..."
           for i in $(seq 1 "${MAX_RETRIES}"); do
-          curl --fail "${TARGET_URL}" && break
-          echo "Waiting for datatracks... $i"
-          sleep "${RETRY_INTERVAL_SECONDS}"
-          done 
+            if curl --fail h ${TARGET_URL}; then
+              echo "Service is ready!"
+              exit 0 # Success
+            fi
+            echo "Waiting for service... $i"
+            sleep ${RETRY_INTERVAL_SECONDS}
+          done
+          echo "Service did not become ready after ${MAX_RETRIES} retries."
+          exit 1 # Failure
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
