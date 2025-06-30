@@ -19,6 +19,7 @@ jobs:
       - name: Checkout Rust Application Repository
         uses: actions/checkout@v4
         with:
+          submodules: 'true'
           repository: 'data-tracks/DataTracks'
           path: 'app'
 
