@@ -127,7 +127,7 @@ signing {
 
     // Provide the passphrase via project property or environment variable.
     // System.getenv is preferred for CI secrets.
-    passphrase = System.getenv("GPG_PASSPHRASE")
+    // passphrase = System.getenv("GPG_PASSPHRASE")
 
     sign publishing.publications.mavenJava
 }
