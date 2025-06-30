@@ -44,6 +44,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Important: Fetch all history to generate changelog if needed
+          submodules: 'true'
 
       # Optional: Build your library artifacts here if you want to attach them to the release
       # For example, if you have a Gradle project:
