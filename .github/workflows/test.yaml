@@ -1,4 +1,4 @@
-name: DataTracks and JavaTracks Tests
+name: DataTracks Connection Tests
 
 on:
   push:
