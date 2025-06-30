@@ -12,6 +12,12 @@ java {
     targetCompatibility = 1.16
 }
 
+// Ensure source and target compatibility
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17) // Or your desired Java version
+    }
+}
 
 group = 'dev.datatracks'
 version = '1.0-SNAPSHOT'
@@ -71,14 +77,14 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
-            groupId = project.group
-            artifactId = project.name
-            version = project.version
+
+            // Optional: Customize artifactId if different from project name
+            // artifactId = 'my-awesome-library'
 
             pom {
-                name = 'Your Library Name'
-                description = 'A short description of your library.'
-                url = 'https://github.com/your-org/your-repo' // Your project URL
+                name = 'JavaTracks'
+                description = 'Java client to interact with DataTracks.'
+                url = 'https://github.com/data-tracks/JavaTracks' // Your project URL
                 licenses {
                     license {
                         name = 'The Apache License, Version 2.0'
@@ -87,37 +93,40 @@ publishing {
                 }
                 developers {
                     developer {
-                        id = 'yourusername'
-                        name = 'Your Name'
-                        email = 'your@email.com'
+                        id = 'datomo'
+                        name = 'David Lengweiler'
+                        email = 'dave.lengw@gmail.com'
                     }
                 }
                 scm {
-                    connection = 'scm:git:git://github.com/your-org/your-repo.git'
-                    developerConnection = 'scm:git:ssh://github.com:your-org/your-repo.git'
-                    url = 'https://github.com/your-org/your-repo'
+                    connection = 'scm:git:git://github.com/data-tracks/JavaTracks.git'
+                    developerConnection = 'scm:git:ssh://github.com:data-tracks/JavaTracks.git'
+                    url = 'https://github.com/data-tracks/JavaTracks'
                 }
             }
         }
     }
     repositories {
         maven {
-            def releasesRepoUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-            def snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            def releasesRepoUrl = 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
+            def snapshotsRepoUrl = 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
+            url = version.endsWith('SNAPSHOT') ? uri(snapshotsRepoUrl) : uri(releasesRepoUrl)
             credentials {
-                username = project.hasProperty('ossrhUsername') ? project.ossrhUsername : System.getenv('OSSRH_USERNAME')
-                password = project.hasProperty('ossrhPassword') ? project.ossrhPassword : System.getenv('OSSRH_PASSWORD')
+                // In GitHub Actions, these will be pulled from GitHub Secrets, exposed as env vars
+                username = System.getenv("OSSRH_USERNAME")
+                password = System.getenv("OSSRH_PASSWORD")
             }
         }
     }
 }
 
-//signing {
-//    sign publishing.publications.mavenJava
-//    // Ensure you have GPG_TTY set if running in CI/CD without direct tty
-//    // Or use system environment variables for private key and passphrase
-//    useInMemoryPgpKeys(rootProject.ext.get('signing.keyId'), rootProject.ext.get('signing.password'), rootProject.ext.get('signing.secretKeyRingFile'))
-//    // OR simpler for local/CI (requires GPG agent/GPG_TTY setup for passphrase)
-//    // useGpgCmd()
-//}
+signing {
+    // This part is crucial for CI/CD environments.
+    // It tells Gradle to use an in-memory PGP key, which is imported via env variables.
+    useInMemoryPgpKeys(
+            System.getenv("GPG_KEY_ID"),       // Your GPG Key ID (public part)
+            System.getenv("GPG_PASSPHRASE"),   // Your GPG Key Passphrase
+            System.getenv("GPG_PRIVATE_KEY")   // Your GPG Private Key (ASCII armored)
+    )
+    sign publishing.publications.mavenJava
+}

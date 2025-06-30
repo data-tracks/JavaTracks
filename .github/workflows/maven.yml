@@ -1,0 +1,58 @@
+name: Publish to Maven Central
+
+on:
+  release:
+    types: [published] # This workflow triggers when a new GitHub Release is published.
+    # This is the standard way to initiate a Maven Central release.
+
+permissions:
+  contents: read # Required to checkout code
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: production # Optional: Use an environment for production releases
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle' # Cache Gradle dependencies for faster builds
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Prepare GPG Key for Signing
+        # This step imports your GPG private key into the runner's GPG keyring.
+        # It uses the GPG_PRIVATE_KEY secret and GPG_PASSPHRASE secret.
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import --passphrase "${{ secrets.GPG_PASSPHRASE }}"
+          # Optional: Verify the key was imported correctly
+          gpg --list-secret-keys --fingerprint
+        env:
+          GPG_TTY: /dev/tty # Essential for GPG in non-interactive environments
+
+      - name: Publish to Sonatype OSSRH (Maven Central Staging)
+        # This step executes the Gradle 'publish' task.
+        # The environment variables are automatically picked up by your build.gradle.kts
+        # for Sonatype credentials and GPG signing.
+        run: ./gradlew publish
+        env:
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }} # Passed again for useInMemoryPgpKeys
+
+      - name: Verify Publish (Optional)
+        # This step is just for debugging and confirmation.
+        # It checks if any staging repositories were created.
+        # You'll still need to manually "Release" from the Sonatype Nexus UI for final publication.
+        run: |
+          echo "Published artifacts to Sonatype OSSRH staging."
+          echo "You will need to log into https://s01.oss.sonatype.org/ and 'Close' then 'Release' your staging repository."
