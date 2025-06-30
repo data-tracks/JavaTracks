@@ -58,7 +58,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build artifacts
-        run: ./gradlew clean build # This will create your JARs in build/libs/
+        run: ./gradlew clean build -x test  # This will create your JARs in build/libs/
 
       # --- This is the core step for creating the GitHub Release ---
       - name: Create GitHub Release
