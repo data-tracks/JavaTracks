@@ -34,23 +34,12 @@ jobs:
           cd app
           cargo run --package data_tracks --bin data_tracks & 
 
-      - name: Probe Status Until Connected
-        env:
-          TARGET_URL: 127.0.0.1:2666/status # <-- IMPORTANT: Change this to your actual URL
-          MAX_RETRIES: 60                   # Max number of attempts
-          RETRY_INTERVAL_SECONDS: 10         # Time to wait between attempts
-        run: |
-          echo "Waiting for service at $TARGET_URL..."
-          for i in $(seq 1 $MAX_RETRIES); do
-            if curl --fail $TARGET_URL; then
-              echo "Service is ready!"
-              exit 0 # Success
-            fi
-            echo "Waiting for service... $i"
-            sleep $RETRY_INTERVAL_SECONDS
-          done
-          echo "Service did not become ready after $MAX_RETRIES retries."
-          exit 1 # Failure
+      - name: Wait for API Url Action
+        uses: Hardsix/action-wait-for-api@v2.0.2
+        with:
+          url: "http://localhost:2666/status"
+          expected-response-field: "version"
+          expected-response-field-value: ${{env.EXPECTED_API_VERSION}}
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
