@@ -29,6 +29,7 @@ jobs:
 
       - name: Run DataTracks
         run: |
+          cd app
           cargo run --package data_tracks --bin data_tracks & 
           sleep 20
 
