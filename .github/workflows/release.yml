@@ -61,6 +61,26 @@ jobs:
       - name: Build artifacts
         run: ./gradlew clean build -x test  # This will create your JARs in build/libs/
 
+      # --- DEBUGGING STEP 1: Show current working directory ---
+      - name: Show current working directory
+        run: pwd
+
+      # --- DEBUGGING STEP 2: List contents of the build directory ---
+      - name: List contents of build directory
+        run: ls -l build/
+
+      # --- DEBUGGING STEP 3: Recursively list contents of build/libs and check for JARs ---
+      - name: List contents of build/libs (and check for JARs)
+        run: |
+          echo "Listing contents of $(pwd)/build/libs/:"
+          ls -lR build/libs/ # -R for recursive, -l for long listing
+          echo "---"
+          echo "Searching for JAR files:"
+          find build/libs -name "*.jar" # Find all .jar files in build/libs recursively
+          echo "---"
+          find build/libs -maxdepth 1 -name "*.jar" # Find .jar files directly in build/libs (not subdirs)
+        continue-on-error: true # Allow workflow to continue even if this fails, for debugging purposes
+
       # --- This is the core step for creating the GitHub Release ---
       - name: Create GitHub Release
         id: create_release
