@@ -22,6 +22,8 @@ public class ConnectionTest {
         Connection connection = Connection.initConnection("localhost", 9999) ;
         assert connection.connect();
         assert connection.send(Value.text("test"));
+
+        connection.disconnect();
     }
 
 
@@ -31,6 +33,8 @@ public class ConnectionTest {
         assert connection.connect();
 
         connection.receive(Duration.ofMillis(1_000));
+
+        connection.disconnect();
     }
 
     @Test
@@ -39,6 +43,8 @@ public class ConnectionTest {
         assert connection.connect();
 
         connection.receiveValues(Duration.ofMillis(2_000));
+
+        connection.disconnect();
     }
 
     @Test
