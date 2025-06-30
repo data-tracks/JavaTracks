@@ -34,9 +34,11 @@ jobs:
         # This step imports your GPG private key into the runner's GPG keyring.
         # It uses the GPG_PRIVATE_KEY secret and GPG_PASSPHRASE secret.
         run: |
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import --passphrase "${{ secrets.GPG_PASSPHRASE }}"
-          # Optional: Verify the key was imported correctly
-          gpg --list-secret-keys --fingerprint
+          printf "%s" "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import --passphrase "${{ secrets.GPG_PASSPHRASE }}"
+          echo "Listing imported secret keys to verify:"
+          # Use the GPG_KEY_ID from secrets for direct verification
+          gpg --list-secret-keys --fingerprint "${{ secrets.GPG_KEY_ID }}"
+          echo "GPG Key import verification complete."
         env:
           GPG_TTY: /dev/tty # Essential for GPG in non-interactive environments
 
