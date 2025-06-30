@@ -79,7 +79,7 @@ jobs:
 
           # Optional: Upload your built artifacts as release assets
           files: |
-            build/libs/*.jar # Adjust this path to where your build tool outputs artifacts
+            build/libs/datatracks.jar # Adjust this path to where your build tool outputs artifacts
 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
