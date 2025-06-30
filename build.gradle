@@ -39,6 +39,7 @@ tasks.withType(JavaCompile).configureEach {
 
 tasks.register('copyProtocol', Copy) {
     dependsOn(":generateEffectiveLombokConfig")
+
     from "protocol/generated/java/protocol"
     into layout.buildDirectory.dir("generated/flatbuffers").get().asFile
 }
