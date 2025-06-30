@@ -41,25 +41,11 @@ jobs:
           RETRY_INTERVAL_SECONDS: 5         # Time to wait between attempts
           EXPECTED_HTTP_CODE_PREFIX: 2      # Expecting 2xx status codes (200, 201, etc.)
         run: |
-          echo "Probing ${TARGET_URL}..."
-          ATTEMPTS=0
-          while [ $ATTEMPTS -lt $MAX_RETRIES ]; do
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -L "${TARGET_URL}")
-          echo "Attempt $((ATTEMPTS + 1)): HTTP Status Code: ${HTTP_CODE}"
-          
-          # Check if the HTTP code starts with the expected prefix (e.g., '2' for 2xx)
-          if [[ "${HTTP_CODE}" == "${EXPECTED_HTTP_CODE_PREFIX}"* ]]; then
-          echo "Website ${TARGET_URL} is up and responded with ${HTTP_CODE}!"
-          exit 0 # Success, exit the loop and continue the workflow
-          fi
-          
-          ATTEMPTS=$((ATTEMPTS + 1))
-          echo "Waiting ${RETRY_INTERVAL_SECONDS} seconds before retrying..."
-          sleep ${RETRY_INTERVAL_SECONDS}
-          done
-
-          echo "Error: Website ${TARGET_URL} did not become available after ${MAX_RETRIES} attempts."
-          exit 1 # Failure, exit with a non-zero code to fail the workflow step
+          for i in $(seq 1 "${MAX_RETRIES}"); do
+          curl --fail "${TARGET_URL}" && break
+          echo "Waiting for datatracks... $i"
+          sleep "${RETRY_INTERVAL_SECONDS}"
+          done 
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
