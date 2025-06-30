@@ -123,10 +123,11 @@ publishing {
 signing {
     // This part is crucial for CI/CD environments.
     // It tells Gradle to use an in-memory PGP key, which is imported via env variables.
-    useInMemoryPgpKeys(
-            System.getenv("GPG_KEY_ID"),       // Your GPG Key ID (public part)
-            System.getenv("GPG_PASSPHRASE"),   // Your GPG Key Passphrase
-            System.getenv("GPG_PRIVATE_KEY")   // Your GPG Private Key (ASCII armored)
-    )
+    useGpgCmd() // This method uses the GPG command line tool
+
+    // Provide the passphrase via project property or environment variable.
+    // System.getenv is preferred for CI secrets.
+    passphrase = System.getenv("GPG_PASSPHRASE")
+
     sign publishing.publications.mavenJava
 }
