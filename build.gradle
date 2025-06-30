@@ -113,11 +113,11 @@ publishing {
     }
 }
 
-signing {
-    sign publishing.publications.mavenJava
-    // Ensure you have GPG_TTY set if running in CI/CD without direct tty
-    // Or use system environment variables for private key and passphrase
-    useInMemoryPgpKeys(rootProject.ext.get('signing.keyId'), rootProject.ext.get('signing.password'), rootProject.ext.get('signing.secretKeyRingFile'))
-    // OR simpler for local/CI (requires GPG agent/GPG_TTY setup for passphrase)
-    // useGpgCmd()
-}
+//signing {
+//    sign publishing.publications.mavenJava
+//    // Ensure you have GPG_TTY set if running in CI/CD without direct tty
+//    // Or use system environment variables for private key and passphrase
+//    useInMemoryPgpKeys(rootProject.ext.get('signing.keyId'), rootProject.ext.get('signing.password'), rootProject.ext.get('signing.secretKeyRingFile'))
+//    // OR simpler for local/CI (requires GPG agent/GPG_TTY setup for passphrase)
+//    // useGpgCmd()
+//}
