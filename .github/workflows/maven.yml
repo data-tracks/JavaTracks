@@ -46,7 +46,9 @@ jobs:
         # This step executes the Gradle 'publish' task.
         # The environment variables are automatically picked up by your build.gradle.kts
         # for Sonatype credentials and GPG signing.
-        run: ./gradlew publish
+        run: |
+          export GPG_TTY=/dev/tty
+          ./gradlew publish --info --console=plain
         env:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
