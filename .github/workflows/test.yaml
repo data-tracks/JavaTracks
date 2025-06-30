@@ -36,7 +36,7 @@ jobs:
 
       - name: Probe Status Until Connected
         env:
-          TARGET_URL: http://localhost:2666/status # <-- IMPORTANT: Change this to your actual URL
+          TARGET_URL: 127.0.0.1:2666/status # <-- IMPORTANT: Change this to your actual URL
           MAX_RETRIES: 60                   # Max number of attempts
           RETRY_INTERVAL_SECONDS: 10         # Time to wait between attempts
         run: |
