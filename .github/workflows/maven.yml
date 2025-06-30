@@ -34,20 +34,30 @@ jobs:
         # This step imports your GPG private key into the runner's GPG keyring.
         # It uses the GPG_PRIVATE_KEY secret and GPG_PASSPHRASE secret.
         run: |
-          printf "%s" "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import --passphrase "${{ secrets.GPG_PASSPHRASE }}"
-          echo "Listing imported secret keys to verify:"
-          # Use the GPG_KEY_ID from secrets for direct verification
-          gpg --list-secret-keys --fingerprint "${{ secrets.GPG_KEY_ID }}"
+          # --- This is the most crucial part for gpg-agent setup ---
+          eval "$(gpg-agent --daemon --pinentry-mode loopback)"
+          echo "GPG Agent started. GPG_AGENT_INFO: $GPG_AGENT_INFO"
+          
+          # Set GPG_TTY for the current shell session
+          export GPG_TTY=$(tty)
+          echo "GPG_TTY set to: $GPG_TTY"
+          
+          # Import the key
+          printf "%s" "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import --passphrase "${{ secrets.GPG_PASSPHRASE }}" --pinentry-mode loopback
+          
+          # Verification (optional, but good for debugging)
+          echo "Listing ALL imported secret keys to verify:"
+          gpg --batch --list-secret-keys --fingerprint
           echo "GPG Key import verification complete."
-        env:
-          GPG_TTY: /dev/tty # Essential for GPG in non-interactive environments
 
       - name: Publish to Sonatype OSSRH (Maven Central Staging)
         # This step executes the Gradle 'publish' task.
         # The environment variables are automatically picked up by your build.gradle.kts
         # for Sonatype credentials and GPG signing.
         run: |
-          export GPG_TTY=/dev/tty
+          # Re-export GPG_TTY for this shell's context
+          export GPG_TTY=$(tty)
+          # The GPG_AGENT_INFO should persist from the previous step due to 'eval "$(gpg-agent --daemon)"'.
           ./gradlew publish --info --console=plain
         env:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
