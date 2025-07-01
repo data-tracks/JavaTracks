@@ -1,3 +1,5 @@
+import org.jreleaser.gradle.plugin.JReleaserExtension
+
 plugins {
     id 'java'
     // MIT
@@ -5,6 +7,7 @@ plugins {
     id 'java-library'
     id 'maven-publish'
     id 'signing'
+    id 'org.jreleaser' version "1.19.0"
 }
 
 java {
@@ -128,4 +131,23 @@ signing {
         gradle.taskGraph.allTasks.any { it.name.contains("LocalMavenWithChecksums") }
     }
     sign publishing.publications.mavenJava
+}
+
+
+jreleaser {
+    signing {
+        active = 'ALWAYS'
+        armored = true
+    }
+    deploy {
+        maven {
+            mavenCentral {
+                sonatype {
+                    active = 'ALWAYS'
+                    url = 'https://central.sonatype.com/api/v1/publisher'
+                    stagingRepository('target/staging-deploy')
+                }
+            }
+        }
+    }
 }
