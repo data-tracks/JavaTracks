@@ -92,13 +92,16 @@ jar {
 publishing {
     publications {
         mavenJava(MavenPublication) {
+            groupId = "dev.datatracks"
+            artifactId = "javatracks"
+
             from components.java
 
             // Optional: Customize artifactId if different from project name
             // artifactId = 'my-awesome-library'
 
             pom {
-                name = 'JavaTracks'
+                name = 'javatracks'
                 description = 'Java client to interact with DataTracks.'
                 url = 'https://github.com/data-tracks/JavaTracks'
                 licenses {
