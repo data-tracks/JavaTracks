@@ -140,9 +140,7 @@ signing {
 
 
 jreleaser {
-    logging {
-        level = 'DEBUG'
-    }
+    logging.level = 'DEBUG'
     signing {
         active = 'ALWAYS'
         armored = true
