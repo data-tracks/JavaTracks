@@ -23,7 +23,7 @@ java {
     // This ensures sources.jar is created
     withSourcesJar()
     // This ensures javadoc.jar is created
-    // withJavadocJar()
+     withJavadocJar()
 }
 
 ext {
