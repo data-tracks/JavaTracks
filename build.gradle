@@ -76,6 +76,7 @@ test {
 }
 
 jar {
+    enabled = true
     archiveBaseName = 'JavaTracks'
     archiveVersion = appVersion
     archiveFileName = 'javatracks.jar'
@@ -95,7 +96,7 @@ publishing {
                 url = 'https://github.com/data-tracks/JavaTracks'
                 licenses {
                     license {
-                        name = 'The Apache License, Version 2.0'
+                        name = 'The GNU General Public License v3.0'
                         url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
                     }
                 }
@@ -145,7 +146,7 @@ jreleaser {
                 sonatype {
                     active = 'ALWAYS'
                     url = 'https://central.sonatype.com/api/v1/publisher'
-                    stagingRepository('target/staging-deploy')
+                    stagingRepository('build/libs')
                 }
             }
         }
