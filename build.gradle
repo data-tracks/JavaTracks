@@ -92,7 +92,7 @@ publishing {
             pom {
                 name = 'JavaTracks'
                 description = 'Java client to interact with DataTracks.'
-                url = 'https://github.com/data-tracks/JavaTracks' // Your project URL
+                url = 'https://github.com/data-tracks/JavaTracks'
                 licenses {
                     license {
                         name = 'The Apache License, Version 2.0'
