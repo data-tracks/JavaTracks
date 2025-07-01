@@ -150,7 +150,7 @@ jreleaser {
                 sonatype {
                     active = 'ALWAYS'
                     url = 'https://central.sonatype.com/api/v1/publisher'
-                    stagingRepository('pre-staging')
+                    stagingRepository(layout.buildDirectory.dir("pre-staging"))
                 }
             }
         }
