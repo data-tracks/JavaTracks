@@ -38,6 +38,9 @@ jobs:
       - name: Publish to local staging repository
         run: ./gradlew publishMavenJavaPublicationToLocalStagingRepository
 
+      - name: Debug - List build directory contents
+        run: ls -R build/
+
       - name: Publish package
         run: ./gradlew jreleaserPublish
         env:

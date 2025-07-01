@@ -126,7 +126,7 @@ publishing {
         maven {
             name = "localStaging" // A descriptive name for this local repo
             // Point this to the *same* directory as JReleaser's stagingRepository
-            url = layout.buildDirectory.dir("pre-staging")
+            url = layout.buildDirectory.dir("staging")
         }
     }
 }
@@ -150,7 +150,7 @@ jreleaser {
                 sonatype {
                     active = 'ALWAYS'
                     url = 'https://central.sonatype.com/api/v1/publisher'
-                    stagingRepository('build/pre-staging')
+                    stagingRepository('build/staging')
                 }
             }
         }
