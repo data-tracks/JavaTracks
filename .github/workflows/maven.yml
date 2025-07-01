@@ -35,6 +35,9 @@ jobs:
       - name: Build package
         run: ./gradlew build -x test
 
+      - name: Publish to local staging repository
+        run: ./gradlew publishMavenJavaPublicationToLocalStagingRepository
+
       - name: Publish package
         run: ./gradlew jreleaserPublish
         env:

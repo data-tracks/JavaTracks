@@ -20,6 +20,10 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17) // Or your desired Java version
     }
+    // This ensures sources.jar is created
+    withSourcesJar()
+    // This ensures javadoc.jar is created
+    // withJavadocJar()
 }
 
 ext {
@@ -62,6 +66,8 @@ tasks.register('copyProtocol', Copy) {
 }
 
 compileJava.dependsOn copyProtocol
+delombok.dependsOn copyProtocol
+sourcesJar.dependsOn copyProtocol
 
 sourceSets {
     main {
@@ -80,6 +86,7 @@ jar {
     archiveBaseName = 'JavaTracks'
     archiveVersion = appVersion
     archiveFileName = 'javatracks.jar'
+
 }
 
 publishing {
@@ -117,12 +124,9 @@ publishing {
     }
     repositories {
         maven {
-            name = "OSSRH"
-            url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-            credentials {
-                username = System.getenv("MAVEN_USERNAME")
-                password = System.getenv("MAVEN_PASSWORD")
-            }
+            name = "localStaging" // A descriptive name for this local repo
+            // Point this to the *same* directory as JReleaser's stagingRepository
+            url = layout.buildDirectory.dir("pre-staging")
         }
     }
 }
@@ -146,7 +150,7 @@ jreleaser {
                 sonatype {
                     active = 'ALWAYS'
                     url = 'https://central.sonatype.com/api/v1/publisher'
-                    stagingRepository('build/libs')
+                    stagingRepository('pre-staging')
                 }
             }
         }
