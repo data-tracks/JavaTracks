@@ -32,6 +32,16 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Debug Environment Variables
+        run: |
+          echo "MAVEN_USERNAME: $MAVEN_USERNAME"
+          # DO NOT echo MAVEN_PASSWORD directly, it will be visible in logs!
+          # Instead, you can check if it's set:
+          if [ -z "$MAVEN_PASSWORD" ]; then echo "MAVEN_PASSWORD is NOT set"; else echo "MAVEN_PASSWORD IS set"; fi
+        env:
+          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }} # This is needed for the 'publish' step later
+
       - name: Publish package
         run: ./gradlew publish
         env:
