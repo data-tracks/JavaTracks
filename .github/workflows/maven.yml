@@ -1,75 +1,34 @@
-name: Publish to Maven Central
 
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+# GitHub recommends pinning actions to a commit SHA.
+# To get a newer version, you will need to update the SHA.
+# You can also reference a tag or branch, but the action may change without warning.
+
+name: Publish JavaTracks to the Maven Central Repository
 on:
   workflow_dispatch:
   release:
-    types: [published] # This workflow triggers when a new GitHub Release is published.
-    # This is the standard way to initiate a Maven Central release.
-
-permissions:
-  contents: read # Required to checkout code
-
+    types: [created]
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: production # Optional: Use an environment for production releases
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: 'true'
-
-      - name: Set up JDK 17
+      - uses: actions/checkout@v4
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '11'
           distribution: 'temurin'
-          cache: 'gradle' # Cache Gradle dependencies for faster builds
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
 
-      - name: Prepare GPG Key for Signing
-        # This step imports your GPG private key into the runner's GPG keyring.
-        # It uses the GPG_PRIVATE_KEY secret and GPG_PASSPHRASE secret.
-        run: |
-          # --- This is the most crucial part for gpg-agent setup ---
-          eval "$(gpg-agent --daemon --pinentry-mode loopback)"
-          echo "GPG Agent started. GPG_AGENT_INFO: $GPG_AGENT_INFO"
-          
-          # Set GPG_TTY for the current shell session
-          export GPG_TTY=$(tty)
-          echo "GPG_TTY set to: $GPG_TTY"
-          
-          # Import the key
-          printf "%s" "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import --passphrase "${{ secrets.GPG_PASSPHRASE }}" --pinentry-mode loopback
-          
-          # Verification (optional, but good for debugging)
-          echo "Listing ALL imported secret keys to verify:"
-          gpg --batch --list-secret-keys --fingerprint
-          echo "GPG Key import verification complete."
-
-      - name: Publish to Sonatype OSSRH (Maven Central Staging)
-        # This step executes the Gradle 'publish' task.
-        # The environment variables are automatically picked up by your build.gradle.kts
-        # for Sonatype credentials and GPG signing.
-        run: |
-          # Re-export GPG_TTY for this shell's context
-          export GPG_TTY=$(tty)
-          # The GPG_AGENT_INFO should persist from the previous step due to 'eval "$(gpg-agent --daemon)"'.
-          ./gradlew publish --info --console=plain
+      - name: Publish package
+        run: ./gradlew publish
         env:
-          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }} # Passed again for useInMemoryPgpKeys
-
-      - name: Verify Publish (Optional)
-        # This step is just for debugging and confirmation.
-        # It checks if any staging repositories were created.
-        # You'll still need to manually "Release" from the Sonatype Nexus UI for final publication.
-        run: |
-          echo "Published artifacts to Sonatype OSSRH staging."
-          echo "You will need to log into https://s01.oss.sonatype.org/ and 'Close' then 'Release' your staging repository."
+          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}

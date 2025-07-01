@@ -19,8 +19,13 @@ java {
     }
 }
 
+ext {
+    appVersion = "0.0.1"
+}
+
+
 group = 'dev.datatracks'
-version = '1.0-SNAPSHOT'
+version = appVersion
 
 repositories {
     mavenCentral()
@@ -69,7 +74,7 @@ test {
 
 jar {
     archiveBaseName = 'JavaTracks'
-    archiveVersion = '0.0.1'
+    archiveVersion = appVersion
     archiveFileName = 'javatracks.jar'
 }
 
@@ -108,26 +113,19 @@ publishing {
     }
     repositories {
         maven {
-            def releasesRepoUrl = 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
-            def snapshotsRepoUrl = 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
-            url = version.endsWith('SNAPSHOT') ? uri(snapshotsRepoUrl) : uri(releasesRepoUrl)
+            name = "OSSRH"
+            url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
             credentials {
-                // In GitHub Actions, these will be pulled from GitHub Secrets, exposed as env vars
-                username = System.getenv("OSSRH_USERNAME")
-                password = System.getenv("OSSRH_PASSWORD")
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")
             }
         }
     }
 }
 
 signing {
-    // This part is crucial for CI/CD environments.
-    // It tells Gradle to use an in-memory PGP key, which is imported via env variables.
-    useGpgCmd() // This method uses the GPG command line tool
-
-    // Provide the passphrase via project property or environment variable.
-    // System.getenv is preferred for CI secrets.
-    // passphrase = System.getenv("GPG_PASSPHRASE")
-
+    setRequired {
+        gradle.taskGraph.allTasks.any { it.name.contains("LocalMavenWithChecksums") }
+    }
     sign publishing.publications.mavenJava
 }
