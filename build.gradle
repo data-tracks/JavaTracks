@@ -129,7 +129,7 @@ publishing {
         maven {
             name = "localStaging" // A descriptive name for this local repo
             // Point this to the *same* directory as JReleaser's stagingRepository
-            url = layout.buildDirectory.dir("staging")
+            url = layout.buildDirectory.dir("local-staging-repo")
         }
     }
 }

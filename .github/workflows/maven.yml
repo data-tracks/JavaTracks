@@ -43,7 +43,7 @@ jobs:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
 
       - name: Clean
-        run: ./gradlew claen
+        run: ./gradlew clean
 
       - name: Publish to local staging repository
         run: ./gradlew publish
