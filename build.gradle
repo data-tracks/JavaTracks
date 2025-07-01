@@ -11,8 +11,8 @@ plugins {
 }
 
 java {
-    sourceCompatibility = 1.16
-    targetCompatibility = 1.16
+    sourceCompatibility = 1.17
+    targetCompatibility = 1.17
 }
 
 // Ensure source and target compatibility
@@ -150,7 +150,7 @@ jreleaser {
                 sonatype {
                     active = 'ALWAYS'
                     url = 'https://central.sonatype.com/api/v1/publisher'
-                    stagingRepository('build/staging')
+                    stagingRepository(layout.buildDirectory.dir("staging").get().asFile.path)
                 }
             }
         }
