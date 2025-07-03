@@ -26,6 +26,7 @@ jobs:
           submodules: 'true'
           repository: 'data-tracks/DataTracks'
           path: 'app'
+          token: ${{ secrets.TRACKVIEW }}
 
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
